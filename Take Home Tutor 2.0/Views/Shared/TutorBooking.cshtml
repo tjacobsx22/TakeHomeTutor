@@ -1,0 +1,228 @@
+﻿@model Take_Home_Tutor_2._0.Models.Tutor
+
+@{
+    ViewBag.Title = "Tutor Booking";
+    var tutorName = Model.FirstName + " " + Model.LastName;
+}
+<style>
+    h4{
+        text-align: left
+    }
+</style>
+
+<div class="container">
+@*@using (Html.BeginForm("Review", "Shared"))
+{*@
+    <div class="row">
+        <h2>Tutor Booking</h2>
+        Finish your booking with @Model.FirstName @Model.LastName
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <h4>Contact Information</h4>
+        </div>
+    </div>
+    <form role="form" id="payment-form">
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    @Html.Label("First Name:")
+                    @Html.TextBox("CustFirstName", "", new { @Class = "form-control", @tabindex = "1", @id= "CustFirstName" })
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    @Html.Label("Last Name:")
+                    @Html.TextBox("CustLastName", "", new { @Class = "form-control", @tabindex = "2", @id = "CustLastName" })
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    @Html.Label("Email:")
+                    @Html.TextBox("Email", "", new { @Class = "form-control", @tabindex = "3", @id = "Email" })
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    @Html.Label("Student Name:")
+                    @Html.TextBox("StudentName", "", new { @Class = "form-control", @tabindex = "4", @id = "StudentName" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <h4>Credit Card Information</h4>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <span class="payment-errors"></span>
+            </div>
+        </div>
+        <br /><br />
+        <div class="row">
+            <div class="panel panel-default credit-card-box">
+                <div class="panel-heading display-table">
+                    <div class="row display-tr">
+                        <h3 class="panel-title display-td">Payment Details</h3>
+                        <div class="display-td">
+                            <p>A one time charge of $20 will be applied for this session.</p>
+                            <img class="img-responsive pull-right" src="http://i76.imgup.net/accepted_c22e0.png">
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group">
+                                <label for="cardNumber">CARD NUMBER</label>
+                                <input type="tel"
+                                       id="CCNumber"
+                                       class="form-control"
+                                       name="cardNumber"
+                                       placeholder="Valid Card Number"
+                                       data-stripe="number"
+                                       required />
+                                <span class="cc-brand"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-2 col-md-2">
+                            <div class="form-group">
+                                <label for="cardExpiry"><span>MONTH</span></label>
+                                <input type="tel"
+                                       class="form-control"
+                                       name="cardExpiry"
+                                       placeholder="MM"
+                                       data-stripe="exp-month"
+                                       required />
+                            </div>
+                        </div>
+                        <div class="col-xs-4 col-md-4">
+                            <div class="form-group">
+                                <label for="cardYear"><span>YEAR</span></label>
+                                <input type="tel"
+                                       class="form-control"
+                                       name="cardYear"
+                                       placeholder="YYYY"
+                                       data-stripe="exp-year"
+                                       required />
+                            </div>
+                        </div>
+                        <div class="col-xs-5 col-md-5 pull-right">
+                            <div class="form-group">
+                                <label for="cardCVC">CV CODE</label>
+                                <input type="tel"
+                                       class="form-control"
+                                       name="cardCVC"
+                                       placeholder="CVC"
+                                       data-stripe="cvc"
+                                       required />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <button class="btn btn-success btn-lg btn-block" type="submit">Book it now!</button>
+                        </div>
+                    </div>
+                    <br/>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <span class="alert alert-info">By clicking Book it now, you are agreeing to our <a href="@Url.Action("Terms", "Shared")" target="_blank">terms and conditions.</a></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        @Html.Hidden("ID")
+        @*<div class="form-group">
+                <input class="btn btn-primary" type="submit" />
+            </div>*@
+        @*}*@
+    </form>
+</div>
+
+<script>
+    jQuery(function ($) {
+        $("#CCNumber").payment('formatCardNumber');
+
+        $("#CCNumber").blur(function () {
+            var cc = $.payment.cardType($("#CCNumber").val());
+            switch(cc){
+                case 'visa':
+                    $(".cc-brand").html("<span class='cc-brand'><img src='/Content/Images/cc/Visa.jpg' /></span>");
+                    break;
+                case 'amex':
+                    $(".cc-brand").html("<span class='cc-brand'><img src='/Content/Images/cc/amex.png' /></span>");
+                    break;
+                case 'discover':
+                    $(".cc-brand").html("<span class='cc-brand'><img src='/Content/Images/cc/discover.png' /></span>");
+                    break;
+                case 'mastercard':
+                    $(".cc-brand").html("<span class='cc-brand'><img src='/Content/Images/cc/mc.jpg' /></span>");
+                    break;
+                default:
+                    break;
+            }
+        });
+    });
+
+    function stripeResponseHandler(status, response) {
+        var $form = $('#payment-form');
+
+        if (response.error) {
+            // Show the errors on the form
+            $form.find('.payment-errors').text(response.error.message);
+            $(".payment-errors").addClass("alert alert-danger");
+            $form.find('button').prop('disabled', false);
+        } else {
+            $(".payment-errors").removeClass("alert alert-danger");
+            // response contains id and card, which contains additional card details
+            var token = response.id;
+            var email = $('#Email').val();
+            var first = $('#CustFirstName').val();
+            var last = $('#CustLastName').val();
+            var student = $('#StudentName').val();
+            var id = $('#ID').val();
+            var tutorName = '@tutorName';
+            // Insert the token into the form so it gets submitted to the server
+            $form.append($('<input type="hidden" name="stripeToken" />').val(token));
+            // and submit
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Review", "Shared")',
+                data: { tok: token, email: email, ID: id, first: first, last: last, student: student, tutor: tutorName },
+                success: function (data, status) {
+                    //Let the tutor know the payment was successful, and have them initialize the session.
+                    if (status === "success" & data != false) {
+                        alert("Thank you so much for scheduling a lesson with " + tutorName + ".  They will contact you shortly to set up a time that works for you.")
+                        window.location.href = "@Url.Action("Index", "Home")";
+                    } else {
+                        alert("Please make sure everything is filled ot correctly and try again.");
+                        $form.find('button').prop('disabled', false);
+                    }
+                }
+            });
+        }
+    };
+
+    Stripe.setPublishableKey('@ViewBag.StripeKey');
+
+    $('#payment-form').submit(function (event) {
+        event.preventDefault();
+        var $form = $(this);
+
+        // Disable the submit button to prevent repeated clicks
+        $form.find('button').prop('disabled', true);
+
+        Stripe.card.createToken($form, stripeResponseHandler);
+
+        // Prevent the form from submitting with the default action
+        return false;
+    });
+</script>
+

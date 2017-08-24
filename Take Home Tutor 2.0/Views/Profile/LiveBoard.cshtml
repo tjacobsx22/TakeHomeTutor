@@ -1,0 +1,141 @@
+﻿@{
+    ViewBag.Title = "Live Board";
+}
+<style>
+        .modal-dialog {
+            left: auto;
+        }
+</style>
+<script>
+    $(function () {
+        var missedRequests = 0;
+        function keepAlive() {
+            setTimeout(function () {
+                $.ajax({ url: "@Url.Action("KeepAlive","Shared")" });
+                keepAlive();
+            }, 100000);
+        }
+
+        keepAlive();
+        // Reference the auto-generated proxy for the hub.
+        //var sigr = $.connection.tutorHub;
+        // Create a function that the hub can call back to display messages.
+        var sigr = $.hubConnection();
+        var sigrChatHubProxy = sigr.createHubProxy("tutorHub");
+        sigrChatHubProxy.on('recieveNewStudent', function (name) {
+            var message = name + " is trying to connect with you on take home tutor!";
+            $.ajax({ url: "@Url.Action("SendEmail","Shared")", data: { email: '@ViewBag.Email', subject: 'New Student Request', message: message } });
+            var sound = '@Url.Content("~/Content/Sounds/alert.mp3")';
+            var audio = new Audio(sound);
+            audio.play();
+            $("#studentName").html(name);
+            $("#studentModal").modal('show');
+        });
+
+        sigrChatHubProxy.on('connectNewStudent', function (sessionId) {
+            $("#sessionId").val(sessionId);
+            $("#pleaseWait").modal('hide');
+            //            Minutes
+            //var countdown = 30 * 60 * 1000;
+
+            var countdown = @ViewBag.Minutes * 60 * 1000;
+
+            var timerId = setInterval(function () {
+                countdown -= 1000;
+                var min = Math.floor(countdown / (60 * 1000));
+                var sec = Math.floor((countdown - (min * 60 * 1000)) / 1000);
+
+                if (countdown <= 0) {
+                    $("#endModal").modal('show');
+                    clearInterval(timerId);
+                } else {
+                    $("#countTime").html(min + ":" + sec);
+                }
+
+            }, 1000);
+        });
+
+        sigr.logging = true;
+        sigr.start().done(function () {
+            $("#startLesson").click(function () {
+                //Go offline then accept!
+                $.ajax({ url: "@Url.Action("GoOnline","Profile")", data: { isOnline: false } }).done(function () {
+                    $("#pleaseWait").modal('show');
+                    // Call the Send method on the hub.
+                    sigrChatHubProxy.invoke('accept', '@ViewBag.Name', '@ViewBag.TutorID');
+                });
+            });
+        });
+
+        $('#studentModal').on('show.bs.modal', function () {
+            var myModal = $(this);
+            clearTimeout(myModal.data('hideInterval'));
+            myModal.data('hideInterval', setTimeout(function () {
+                missedRequests++;
+                myModal.modal('hide');
+                if (missedRequests > 1) {
+                    $.ajax({ url: "@Url.Action("KillSession","Shared")" });
+                    window.location.href = "@Url.Action("Index", "Profile")";
+                }
+            }, 120000));
+        });
+
+        $("#endLesson").on("click", function () {
+            //go back online for another lesson!
+            $.ajax({ url: "@Url.Action("EndLesson","Shared")", data: { comment: $("#endLessonComment").val(), lessonId: $("#sessionId").val() } }).done(function () {
+                $.ajax({ url: "@Url.Action("GoOnline","Profile")", data: { isOnline: true } }).done(function () {
+
+                });
+            });
+        });
+    });
+</script>
+
+<h2>Live Board</h2>
+<div id="countTime"></div>
+<body>
+        <iframe id="frame" src="https://www.twiddla.com/api/start.aspx?sessionid=@ViewBag.ID&loginusername=@ViewBag.Name&loginpassword=@ViewBag.Pass&autostart=true" frameborder="0" style="min-height: 90vh; min-width: 90vw"></iframe> 
+    <input type="hidden" id="sessionId" />
+    <div id="studentModal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">New Student</h4>
+                </div>
+                <div class="modal-body">
+                    <p><span id="studentName"></span> would like to learn.  Are you ready to start the lesson?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Decline</button>
+                    <button id="startLesson" type="button" class="btn btn-primary" data-dismiss="modal">Start lesson</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <div id="endModal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Lesson over</h4>
+                </div>
+                <div class="modal-body">
+                    <p>This lesson is over, please end the lesson by clicking Complete lesson now.  If you have any comments about this lesson, please type them below before ending the lesson.</p>
+                    <textarea id="endLessonComment" rows="3" style="width:100%"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button id="endLesson" type="button" class="btn btn-primary" data-dismiss="modal">Complete lesson</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <div id="pleaseWait" class="modal fade bs-example-modal-sm" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content" style="text-align:center">
+                Attempting to connect you to your student, please wait...
+                <br/><img src="~/Content/Images/ajax-loader.gif" />
+            </div>
+        </div>
+    </div>
+</body>

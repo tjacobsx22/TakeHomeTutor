@@ -1,0 +1,67 @@
+﻿
+@{
+    ViewBag.Title = "Live Tutors";
+}
+<script type="text/javascript" src="https://js.stripe.com/v2/"></script>
+<h2>Live Tutors Online Now</h2>
+
+<div id="listView"></div>
+<input type="hidden" id="requestedTutor" />
+
+<div id="pleaseWait" class="modal fade bs-example-modal-sm" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content" style="text-align:center">
+            Attempting to connect you to your tutor, please wait...
+            <br /><img src="~/Content/Images/ajax-loader.gif" />
+        </div>
+    </div>
+</div>
+
+<script type="text/x-kendo-tmpl" id="template">
+    <div class="well">
+        <h3>#:FirstName# #:LastName#</h3>
+        <p>#:Bio#</p>
+        <p>#:Subject#</p>
+        @*<a class="btn btn-primary" href='@Url.Action("GoLive", "Home")/#= ID #'>Let's learn together!</a>*@
+        <a class="btn btn-primary" onclick="test('#=BoardUser#', '#=ID#')" href='javascript:void(0)'>Let's learn together!</a>
+    </div>
+</script>
+
+<script>
+    var dataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: "@Url.Action("GetOnlineTutors","Home")",
+            dataType: "json"
+        }
+    }
+    });
+    $("#listView").kendoListView({
+         dataSource: dataSource,
+         template: kendo.template($("#template").html())
+    });
+
+    var sigr = $.hubConnection();
+    var sigrChatHubProxy = sigr.createHubProxy("tutorHub");
+    sigrChatHubProxy.on('acceptNewStudent', function (id) {
+        if ($("#requestedTutor").val() === id) {
+            window.location.href = '@Url.Action("GoLive", "Home")/' + id;
+        }
+        $("#listView").data("kendoListView").dataSource.read();
+    });
+    sigr.logging = true;
+    sigr.start();
+
+    function test(tutor, tutId) {
+        //var sigr = $.connection.tutorHub;
+        var student = prompt("What's your name?");
+        $("#pleaseWait").modal('show');
+        $("#requestedTutor").val(tutId);
+        sigrChatHubProxy.invoke('send', tutor, student);
+        setTimeout(function () {
+            $("#pleaseWait").modal('hide');
+            alert("It looks like this tutor is not responding, please try another tutor.")
+        }, 120000);
+    }
+
+</script>

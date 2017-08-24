@@ -1,0 +1,188 @@
+﻿@{
+    ViewBag.Title = "Live!";
+}
+
+<style>
+  .stars{
+    color: #9999ff;
+  }
+  .active {
+    color: #000099;
+  }
+    .selected {
+    color: #000099;
+  }
+
+    /*Charge modal fix*/
+    .modal-dialog {
+            left: auto;
+        }
+</style>
+<h2>Live!</h2>
+
+    <div class="row-fluid">
+        <div class="col-sm-12">
+            <div id="countTime"></div>
+            <iframe src="https://www.twiddla.com/api/start.aspx?sessionid=@ViewBag.ID&autostart=true" frameborder="1" style="min-height: 90vh; min-width: 90vw"></iframe>
+
+            <div id="endModal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">Lesson over</h4>
+                        </div>
+                        <div class="modal-body">
+                            Select a rating for this tutor:
+                            <br />
+                            <div class="btn-group" data-toggle="buttons">
+                                <label class="btn btn-link" style="padding: 1px;">
+                                    <input type="radio" name="options" id="option1" value="1" autocomplete="off"><span class="stars glyphicon glyphicon-star" id="star1" data-index="1" aria-hidden="true"></span>
+                                </label>
+                                <label class="btn btn-link" style="padding: 1px;">
+                                    <input type="radio" name="options" id="option2" value="2" autocomplete="off"><span class="stars glyphicon glyphicon-star" id="star2" data-index="2" aria-hidden="true"></span>
+                                </label>
+                                <label class="btn btn-link" style="padding: 1px;">
+                                    <input type="radio" name="options" id="option3" value="3" autocomplete="off"><span class="stars glyphicon glyphicon-star" id="star3" data-index="3" aria-hidden="true"></span>
+                                </label>
+                                <label class="btn btn-link" style="padding: 1px;">
+                                    <input type="radio" name="options" id="option4" value="4" autocomplete="off"><span class="stars glyphicon glyphicon-star" id="star4" data-index="4" aria-hidden="true"></span>
+                                </label>
+                                <label class="btn btn-link" style="padding: 1px;">
+                                    <input type="radio" name="options" id="option5" value="5" autocomplete="off"><span class="stars glyphicon glyphicon-star" id="star5" data-index="5" aria-hidden="true"></span>
+                                </label>
+                            </div>
+                            <p>This lesson is over, please end the lesson by clicking COMPLETE LESSON now.  If you have any comments about this lesson, please type them below before ending the lesson.</p>
+                            <textarea id="endLessonComment" rows="3" style="width:100%"></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="endLesson" class="btn btn-primary" data-dismiss="modal" type="button">COMPLETE LESSON</button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+        </div>
+    </div>
+
+<script>
+    var sigr = $.hubConnection();
+    var sigrChatHubProxy = sigr.createHubProxy("tutorHub");
+    sigr.logging = true;
+
+    function stripeResponseHandler(status, response) {
+        var $form = $('#payment-form');
+
+        if (response.error) {
+            // Show the errors on the form
+            $form.find('.payment-errors').text(response.error.message);
+            $form.find('button').prop('disabled', false);
+        } else {
+            // response contains id and card, which contains additional card details
+            var token = response.id;
+            var email = $('#email').val();
+            // Insert the token into the form so it gets submitted to the server
+            $form.append($('<input type="hidden" name="stripeToken" />').val(token));
+            // and submit
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Charge", "Shared")',
+                data: { tok: token, email: email, session: '@ViewBag.SessionId', tutor:'@ViewBag.TutorID' },
+                success: function (data, status) {
+                    //Let the tutor know the payment was successful, and have them initialize the session.
+                    if (status === "success") {
+                        $('#chargeModal').modal('hide');
+                        sigr.start().done(function () {
+                            sigrChatHubProxy.invoke('connect', '@ViewBag.Tutor', '@ViewBag.SessionId');
+                            //            Minutes
+                            //var countdown = 30 * 60 * 1000;
+
+                            var countdown = @ViewBag.Minutes * 60 * 1000;
+
+                            var timerId = setInterval(function () {
+                                countdown -= 1000;
+                                var min = Math.floor(countdown / (60 * 1000));
+                                var sec = Math.floor((countdown - (min * 60 * 1000)) / 1000);
+
+                                if (countdown <= 0) {
+                                    clearInterval(timerId);
+                                    $("#endModal").modal('show');
+                                } else {
+                                    $("#countTime").html(min + ":" + sec);
+                                }
+
+                            }, 1000);
+                        });
+                    }
+                }
+            });
+        }
+    };
+    //$(function () {
+    function AddRatingClass(id) {
+        for (var i = 1; i <= id; i++) {
+            $("#star" + i).addClass("active");
+        }
+    }
+
+    function RemoveRatingClass(id) {
+        for (var i = 1; i <= id; i++) {
+            $("#star" + i).removeClass("active");
+        }
+    }
+
+    function ToggleRatingClass(id) {
+        for (var i = 1; i <= id; i++) {
+            $("#star" + i).addClass("selected");
+        }
+        for (var i = 5; i > id; i--) {
+            $("#star" + i).removeClass("selected");
+        }
+    }
+
+    $(function() {
+        Stripe.setPublishableKey('@ViewBag.StripeKey');
+        $('#chargeModal').modal('show');
+        $('#payment-form').submit(function (event) {
+            event.preventDefault();
+            var $form = $(this);
+
+            // Disable the submit button to prevent repeated clicks
+            $form.find('button').prop('disabled', true);
+
+            Stripe.card.createToken($form, stripeResponseHandler);
+
+            // Prevent the form from submitting with the default action
+            return false;
+        });
+
+        $("#endLesson").on("click", function () {
+            //go back online for another lesson!
+            $.ajax({ url: "@Url.Action("StudentEndLesson","Shared")", data: { comment: $("#endLessonComment").val(), lessonId: '@ViewBag.SessionId', rating: $("input:radio[name='options']:checked").val() } }).done(function () {
+                window.location.href = '@Url.Action("Tutors", "Home")';
+            });
+        });
+
+        $(".stars").on({
+            click: function () {
+                ToggleRatingClass($(this).data("index"));
+            }, mouseenter: function () {
+                AddRatingClass($(this).data("index"));
+            }, mouseleave: function () {
+                RemoveRatingClass($(this).data("index"))
+            }
+        });
+    });
+</script>
+
+
+<div id="chargeModal" class="modal fade" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Payment Information</h4>
+            </div>
+            <div class="modal-body">
+                @Html.Partial("_Stripe")
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

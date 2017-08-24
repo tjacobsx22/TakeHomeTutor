@@ -1,0 +1,159 @@
+﻿
+@{
+    ViewBag.Title = "Join us";
+}
+
+<br />
+<div class="container-fluid">
+        <div class="row-fluid">
+            <div class="col-sm-6">
+                <div class="jumbotron">
+                    <h2>Join our growing community!</h2>
+                    <p>
+                        Joining the Take Home Tutor family can launch your career to new heights.
+                        You are your own boss here and our competitive commission structure rewards you for growing your business.
+                        As you grow, so does your commission.  Earn 50% - 70% commission every time a new student buys one of your courses!
+                        You will always earn a $15 per hour commission tutoring, even if you never decide to create a course.
+                    </p>
+                    <table class="table">
+                            <tr><th>Threshold</th><th>Commission</th></tr>
+                            <tr><td> First 100 students</td><td> 50% </td></tr>
+                            <tr><td> Next 150 students</td> <td> 60% </td></tr>
+                            <tr><td> 251 students and beyond</td><td> 70% </td></tr>
+                            <tr><td> Tutoring </td><td> $15 per hour </td></tr>
+                    </table>
+                    <p>
+                        You can simply be a tutor, a content creator, or both!
+                        There is no limitation on Take Home Tutor.  So please, join us now so you can get started right away!
+                    </p>
+                    <p>
+                        Want to know how you will be creating courses?  <a href="http://courses.takehometutor.com" target="_blank">Click Here</a> to check it out!
+                    </p>
+                    <p>
+                        Enter in a number of students to see how much you can earn on a typical year long course costing $100.
+                        <br />
+                        Students: <input type="number" id="students" />&nbsp;<a class="btn btn-primary">Calculate</a>
+                        <br />
+                        Revenue: <span id="revenue">$0</span>
+                        <br />
+                    </p>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <form id="app" method="post" action="@Url.Action("Application")">
+                    <div class="form-group">
+                        <label for="firstname">First Name</label>
+                        <input type="text" class="form-control" name="firstname" id="firstname" placeholder="First Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastname">Last Name</label>
+                        <input type="text" class="form-control" name="lastname" id="lastname" placeholder="Last Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email address</label>
+                        <input type="email" class="form-control" name="email" id="email" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" class="form-control" name="password" id="password" placeholder="Password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Confirm Password</label>
+                        <input type="password" class="form-control" id="conf-password" placeholder="Password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="zip">Zipcode</label>
+                        <input type="number" class="form-control" name="zip" id="zip" placeholder="Zipcode" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Subjects</label>
+                        @Html.DropDownList("subject", new SelectList(ViewBag.Subjects, "Value", "Text"), new { multiple = "multiple", required = "required" })
+                    </div>
+                    <div class="form-group">
+                        <label for="bio">Bio</label>
+                        <textarea rows="5" class="form-control" name="bio" id="bio" placeholder="Biography" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    <div class="row-fluid">
+        <div class="col-lg-12">
+            <div class="jumbotron">
+                <p>
+                    Interested in tutoring?  Play around in the whiteboard app you will be using to tutor, right here!  Want even more fun?
+                    Open up a different browser and come to the same page to start two sessions, and watch how they interact together!
+                </p>
+                <br />
+                <iframe src="https://www.twiddla.com/5" frameborder="0" width="1200" height="800"></iframe>
+            </div>
+        </div>
+    </div>
+  
+</div>
+<script>
+    $("#app").submit(function (event) {
+        if ($("#password").val() !== $("#conf-password").val()) {
+            event.preventDefault();
+            alert("Passwords must match");
+            $("#conf-password").focus();
+        } else if ($("#password").val().length < 8) {
+            event.preventDefault();
+            alert("Password must be at least 8 characters");
+            $("#password").focus();
+        }
+    });
+
+    $(function () {
+        $("#subject").kendoMultiSelect().data("kendoMultiSelect");
+        $('#students').blur(function () {
+            var students = $('#students').val();
+            var fifty = 0;
+            var sixty = 0;
+            var seventy = 0;
+            if (students > 250) {
+                seventy = students - 250;
+                sixty = 150;
+                fifty = 100;
+            } else if (students > 100) {
+                sixty = students - 100;
+                fifty = 100;
+            } else {
+                fifty = students;
+            }
+            var revenue = (100 * (fifty * .5)) +
+                                        (100 * (sixty * .6)) +
+                          (100 * (seventy * .7));
+            $('#revenue').text('$' + revenue);
+        });
+    })
+</script>
+
+@*                    <p>
+        Joining the Take Home Tutor family can launch your career to new heights.
+        You are your own boss here and our competitive commission structure rewards you for growing your business.
+        For the first 100 students that apply to your courses, you receive a 50% commission.
+        For a typical course that lasts the school year, if all 100 students purchase the entire year long course, you would earn $5,000!
+        As you grow, so does your commission.  From 100 to 250 students you earn 60% and beyond that, you earn 70%.
+        We love to reward our loyal teachers and want to see you and your students succeed.
+        You will always earn a $15 per hour commission tutoring, even if you never decide to create a course.
+    </p>
+    <p>
+        Let’s consider a teacher who decides to tutor 3 hours a night, 48 weeks a year, and created 2 courses.
+        From tutoring alone, they would earn $10,800!
+        If that teacher does well marketing their courses to their students and on social media, and gets 200 enrolled students per course (400 students total), that teacher just earned:
+    </p>
+    <p>
+        <table border="1" width="100%">
+            <tr><td> First 100 students - %50 </td><td> $100 </td><td> $5,000 </td></tr>
+            <tr><td> Next 150 students - %60 </td><td> $100 </td><td> $9,000 </td></tr>
+            <tr><td> Final 150 students - %70 </td><td> $100 </td><td> $10,500 </td></tr>
+            <tr><td> Tutoring </td><td> $15 per hour </td><td> $10,800 </td></tr>
+            <tr><td> Total year end revenue </td><td></td><td> $35,300 </td></tr>
+        </table>
+    </p>
+    <p>
+        Now it is obvious you don’t have to go this big if you just want to generate some extra income, or you can go much bigger and have thousands of students under your courses.
+        There is no limitation on Take Home Tutor.  So please, join us now so you can get started right away!
+    </p>*@
+

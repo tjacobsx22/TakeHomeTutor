@@ -1,0 +1,305 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    var scheduleUrl = string.Format("{0}?tutid={1}", Url.Action("PrivateLesson", "Home", routeValues: null, protocol: Request.Url.Scheme), Model.ID);
+}
+<style>
+    .modal-dialog {
+        left: auto;
+    }
+</style>
+
+@model Take_Home_Tutor_2._0.Models.Tutor
+<link type="text/css" rel="stylesheet" href="@Url.Content("~/Content/croppie.css")">
+<script src="@Url.Content("~/scripts/croppie.js")"></script>
+
+<div id="schedule" class="modal fade">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Schuedle</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">X</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Schedule Date:  <input name="date" id="scheduleDate">
+                <input name="url" id="hiddenUrl" type="hidden" />
+                <input name="pid" id="hiddenPid" type="hidden" />
+                <input name="email" id="hiddenEmail" type="hidden" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="submitSchedule()">Save Schedule</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="newBoardUserModal" class="modal fade">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New Board User</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">X</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Username: <input name="buser" id="buser" type="text" />
+                Password: <input name="bpwd" id="bpwd" type="password" />
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="submitBoardUser()">Save Schedule</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2>Profile</h2>
+
+<div class="container">
+    <div class="row">
+        <p>Please upload a profile image so your students can put a face to a name!</p>
+        <input name="profPic" id="profPic" type="file" />
+        <p>Profile preview:</p>
+        <div class="col-md-3 col-sm-3 col-xs-4">
+            <img id="profileImg" style="width:200px;float:right" src="@Model.ProfileImage" />
+            <br />
+        </div>
+        <div class="col-md-8 col-sm-8">
+            <div class="well">
+                <a class="btn btn-primary btn-sm" style="float:right">Edit</a>
+                <h3>@Model.FirstName @Model.LastName</h3>
+                <p>@Model.Bio</p>
+                <p>@Model.Subject</p>
+            </div>
+        </div>
+    </div>
+    <br />
+
+    @if (Model.IsOnline)
+    {
+        <div class="row">
+            <div class="col-sm-8 col-sm-offset-3">
+                <a class="btn btn-lg btn-primary" id="is-offline" href="javascript:void(0)">Disconnect</a>
+                <a class="btn btn-lg btn-primary" id="go-to-live-board" href="@Url.Action("LiveBoard", "Profile")">Go to my board</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        if (Model.Approved)
+        {
+            if (Model.AcceptedTerms)
+            {
+
+                if (string.IsNullOrWhiteSpace(Model.BoardUser))
+                {
+                <div class="row">
+                    <div class="col-sm-1 col-sm-offset-4">
+                        <a class="btn btn-lg btn-primary" id="create-board-user" href="javascript:void(0)">Create board user</a>
+                    </div>
+                </div>
+                }
+                else
+                {
+                <div class="row">
+                    <div class="col-sm-4 col-sm-offset-4">
+                        @*<a class="btn btn-lg btn-primary" id="is-online" href="javascript:void(0)">Go online</a>*@
+                        <a class="btn btn-lg btn-primary" id="go-to-live-board" href="@Url.Action("LiveBoard", "Profile")">Go to my board</a>
+                    </div>
+                </div>
+                }
+            }
+            else
+            {
+                <div class="row">
+                    <div class="col-sm-12 alert alert-warning">
+                        <p><a href="@Url.Action("ContractTerms", "Profile")">Click here to read and accept the terms and conditions before you may begin working with clients.</a></p>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="row">
+                <div class="col-sm-12 alert alert-warning">
+                    <p>Thank you for your application.  Here you can manage your profile.  You will receive an email when your application has been reviewed, accepted, and you have been issued a board.</p>
+                </div>
+            </div>
+        }
+    }
+    <br /><br />
+    @if (Model.Approved)
+    {
+        <div>
+            <div id="unscheduledLessons"></div>
+        </div>
+    }
+
+</div>
+<script>
+    function newProfilePic(newUrl) {
+        $("#profileImg").attr("src", newUrl);
+    }
+
+    function schedule(pid, email) {
+        var url = '@scheduleUrl' + '&pid=' + pid + '';
+        $("#hiddenUrl").val(url);
+        $("#hiddenPid").val(pid);
+        $("#hiddenEmail").val(email);
+        $("#schedule").modal('show');
+    }
+
+    function submitBoardUser() {
+        if ($("#buser").val() === "" || $("#bpwd").val() === "") {
+            alert("Please fill out all fields");
+        } else {
+            $("#newBoardUserModal").modal('hide');
+            $.ajax({
+                method: "POST",
+                url: "@Url.Action("NewTwiddlaUser", "Profile")",
+                data: { username: $("#buser").val(), password: $("#bpwd").val() }
+        }).success(function (data) {
+            if (data.success) {
+
+            } else {
+                alert(data.msg);
+            }
+        });
+        }
+    }
+
+    function submitSchedule() {
+        if ($("#scheduleDate").val() == "") {
+            alert("Please choose a date and time");
+        } else {
+            $("#schedule").modal('hide');
+            $.ajax({
+                method: "POST",
+                url: "@Url.Action("SaveSchedule", "Profile")",
+                data: { date: $("#scheduleDate").val(), url: $("#hiddenUrl").val(), id: $("#hiddenPid").val(), tutid: '@Model.ID', email: $("#hiddenEmail").val() }
+            }).success(function () {
+                $("#unscheduledLessons").data('kendoGrid').dataSource.read();
+            });
+        }
+    }
+
+    $(document).ready(function () {
+        $("#scheduleDate").kendoDateTimePicker({ min: new Date() });
+        $("#profPic").kendoUpload({
+            async: {
+                saveUrl: '@Url.Action("saveProfImg", "Profile")',
+                autoUpload: true,
+                multiple: false
+            },
+            upload: function (e) {
+                e.data = { tutId: '@Model.ID' };
+            },
+            success: function (e) {
+                newProfilePic(e.response);
+            }
+        });
+
+        var offsetMiliseconds = new Date().getTimezoneOffset() * 60000;
+
+        $("#unscheduledLessons").kendoGrid({
+            dataSource: {
+                type: "json",
+                pageSize: 20,
+                transport: {
+                    read: "@Url.Action("GetLessons", "Profile")"
+                },
+                schema: {
+                    model: {
+                        fields: {
+                            FirstName: { type: "string" },
+                            LastName: { type: "string" },
+                            Email: { type: "string" },
+                            StudentName: { type: "string" },
+                            CreateDate: { type: "date" },
+                            ScheduleDate: { type: "date" }
+                        }
+                    }
+                },
+                requestEnd: function (e) {
+                    if (e.response && e.response.length) {
+                        var schedules = e.response;
+                        for (var i = 0; i < schedules.length; i++) {
+                            var date = schedules[i].ScheduleDate;
+                            schedules[i].ScheduleDate = date.replace(/\d+/,
+                                function (n) { return parseInt(n) + offsetMiliseconds }
+                            );
+                        }
+                        //if (this.group().length) {
+                        //    for (var i = 0; i < schedules.length; i++) {
+                        //        var sch = schedules[i];
+                        //        sch.ScheduleDate.replace(/\d+/,
+                        //                function (n) { return parseInt(n) + offsetMiliseconds }
+                        //            );
+                        //        }
+                        //        addOffset(gr.Items);
+                        //    }
+                        //} else {
+                        //    addOffset(persons);
+                    }
+                },
+            },
+            filterable: true,
+            sortable: true,
+            pageable: true,
+            columns: [{
+                field: "FirstName",
+                title: "First Name"
+            }, {
+                field: "LastName",
+                title: "Last Name"
+            }, {
+                field: "Email",
+                title: "Email"
+            }, {
+                field: "StudentName",
+                title: "Student Name"
+            }, {
+                field: "CreateDate",
+                title: "Create Date",
+                format: "{0:MM/dd/yyyy}"
+            }, {
+                field: "ScheduleDate",
+                title: "Schedule Date",
+                format: "{0:MM/dd/yyyy hh:mm tt}"
+            }, {
+                template: "<button onclick=\"schedule('#=PurchaseId#', '#=Email#')\">Schedule</button>"
+            }]
+        });
+
+
+        $("#is-online").click(function () {
+            $.ajax({
+                method: "POST",
+                url: "@Url.Action("GoOnline","Profile")",
+                data: { isOnline: true }
+            }).success(function () {
+                window.location.href = '@Url.Action("LiveBoard", "Profile")';
+            });
+        });
+
+        $("#is-offline").click(function () {
+            $.ajax({
+                method: "POST",
+                url: "@Url.Action("GoOnline","Profile")",
+                data: { isOnline: false }
+            }).success(function () {
+                window.location.href = '@Url.Action("Index", "Profile")';
+            });
+        });
+
+        $("#create-board-user").click(function () {
+            $("#newBoardUserModal").modal('show');
+        });
+    });
+</script>
+
