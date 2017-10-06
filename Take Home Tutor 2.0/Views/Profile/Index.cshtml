@@ -3,16 +3,8 @@
     ViewBag.Title = "Index";
     var scheduleUrl = string.Format("{0}?tutid={1}", Url.Action("PrivateLesson", "Home", routeValues: null, protocol: Request.Url.Scheme), Model.ID);
 }
-<style>
-    .modal-dialog {
-        left: auto;
-    }
-</style>
-
+    
 @model Take_Home_Tutor_2._0.Models.Tutor
-<link type="text/css" rel="stylesheet" href="@Url.Content("~/Content/croppie.css")">
-<script src="@Url.Content("~/scripts/croppie.js")"></script>
-
 <div id="schedule" class="modal fade">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -141,6 +133,16 @@
     }
 
 </div>
+@section PageScripts{
+    <style>
+        .modal-dialog {
+            left: auto;
+        }
+    </style>
+
+
+    <link type="text/css" rel="stylesheet" href="@Url.Content("~/Content/croppie.css")">
+    <script src="@Url.Content("~/scripts/croppie.js")"></script>
 <script>
     function newProfilePic(newUrl) {
         $("#profileImg").attr("src", newUrl);
@@ -302,4 +304,5 @@
         });
     });
 </script>
+    }
 

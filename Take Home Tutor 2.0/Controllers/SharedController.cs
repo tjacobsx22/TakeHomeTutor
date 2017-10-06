@@ -26,6 +26,11 @@ namespace Take_Home_Tutor_2._0.Controllers
             return View();
         }
 
+        public ActionResult ScheduledLesson()
+        {
+            return View();
+        }
+
         public ActionResult TutorBooking(Guid id)
         {
             ViewBag.StripeKey = ConfigurationManager.AppSettings.GetValues("StripePublishableKey").FirstOrDefault();

@@ -1,60 +1,9 @@
 ﻿
-
-/*#homepage-container{
-    background-image:url(Images/class.jpg);
-    background-repeat:no-repeat;
-    background-size:cover;
-}*/
-
-.navbar {
-    background: white;
-}
-
-.home-page-block{
-    background: white;
-    border-radius: 6px;
-}
-
-h4{
-    color: #0049a0;
-    text-align: center;
-    margin: 0 auto;
-    padding: 20px 0;
-}
-    
-#homepage-container h2{
-    color: #428bca;
-    /*font-weight: 700;
-    font-size: 2.5rem;
-    letter-spacing: 0.2rem;
-    text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.4);*/
-    text-align: center;
-    /*width: 80%;
-    max-width: 1000px;*/
-    padding: 25px 0;
-    margin: 0 auto;
-}
-
-.home-para {
-    text-align: center;
-    font-size: 1.75rem;
-    padding: 15px 0;
-}
-
-#homepage-container .zip{
-    color: #FFF;
-    font-weight: 200;
-    font-size: 2.5rem;
-    letter-spacing: 0.2rem;
-    text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.4);
-}
-
-#homepage-container .wrapper{
-    margin: 0 auto;
-    width: 80%;
-    text-align: center
-}
-
-.navbar-toggle .icon-bar {
-    background-color: black;
-}
+.navbar{background:white;}
+.home-page-block{background:white;border-radius:6px;}
+h4{color:#0049a0;text-align:center;margin:0 auto;padding:20px 0;}
+#homepage-container h2{color:#428bca;text-align:center;padding:25px 0;margin:0 auto;}
+.home-para{text-align:center;font-size:1.75rem;padding:15px 0;}
+#homepage-container .zip{color:#FFF;font-weight:200;font-size:2.5rem;letter-spacing:0.2rem;text-shadow:2px 2px 3px rgba(0, 0, 0, 0.4);}
+#homepage-container .wrapper{margin:0 auto;width:80%;text-align:center}
+.navbar-toggle .icon-bar{background-color:black;}

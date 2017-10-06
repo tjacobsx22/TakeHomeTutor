@@ -235,8 +235,8 @@
 
         if ($(window).width() > 767) {
             // slider banner 1
-            $('.slider-banner').height($(window).height() - $('header').height() + 1);
-            $('.slider-banner .slider-item').height($(window).height() - $('header').height() + 1);
+            $('.bg-container').height($(window).height() - $('header').height() + 1);
+            $('.bg-container .slider-item').height($(window).height() - $('header').height() + 1);
             // slider banner 3
             $('.slider-banner-03').height($(window).height() - $('header').height() + 1);
         }

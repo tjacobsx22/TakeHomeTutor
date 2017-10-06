@@ -103,11 +103,21 @@ namespace Take_Home_Tutor_2._0.Controllers
             Lesson lesson = new Lesson();
             tutor = tutor.GetTutorsById(tutid);
             lesson = lesson.GetIncompleteLessonsByTutorAndId(tutid, pid);
-            tutor.CreateSession(pid, lesson.Email, tutid);
-            var myMeetings = await GetMeetingIds(tutor);
-            var myMeetingIds = myMeetings.Split(',');
-            ViewBag.ID = myMeetingIds[0];
-            return View();
+            //TODO:  If its not time for this lesson, return a message!
+            TimeSpan diff = DateTime.Now.Subtract(lesson.ScheduleDate);
+            if (diff.TotalMinutes > -15 && diff.TotalMinutes < 15)
+            {
+                tutor.CreateSession(pid, lesson.Email, tutid);
+                var myMeetings = await GetMeetingIds(tutor);
+                var myMeetingIds = myMeetings.Split(',');
+                ViewBag.ID = myMeetingIds[0];
+                return View();
+            }
+            else
+            {
+                ViewBag.ScheduledLesson = lesson.ScheduleDate;
+                return View("ScheduledLesson", tutor);
+            }
         }
 
         private async Task<string> GetMeetingIds(Tutor tutor)

@@ -2205,7 +2205,7 @@ footer {
 }
 
 .slider-item .slider-2 {
-    background-image: url(../images/bg-404.jpg)
+    background-image: url(../images/pencils-crayons-calculator.jpg)
 }
 
 .slider-item .slider-2 .slider-caption {
@@ -2223,7 +2223,6 @@ footer {
 .slider-item .slider-caption {
     width: 100%;
     display: table-cell;
-    vertical-align: middle
 }
 
 .slider-item .slider-caption .text-info-2 {

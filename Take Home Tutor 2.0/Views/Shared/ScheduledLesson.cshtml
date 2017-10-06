@@ -1,0 +1,13 @@
+﻿
+@{
+    ViewBag.Title = "It's not your turn!";
+}
+@model Take_Home_Tutor_2._0.Models.Tutor
+
+
+<h2>Your Scheduled Lesson</h2>
+<h4>Your scheduled lesson with @Model.FirstName @Model.LastName is scheduled for:</h4>
+<h4>@ViewBag.ScheduledLesson</h4>
+<h4>It is currently @DateTime.Now.  If you feel this is an error or need to re-schedule, contact your tutor</h4>
+<h4>@Model.Email</h4>
+

@@ -285,6 +285,7 @@
     <Content Include="assets\images\news\news-3.jpg" />
     <Content Include="assets\images\news\news-4.jpg" />
     <Content Include="assets\images\news\news-5.jpg" />
+    <Content Include="assets\images\pencils-crayons-calculator.jpg" />
     <Content Include="assets\images\people-avatar-1.jpg" />
     <Content Include="assets\images\people-avatar-2.jpg" />
     <Content Include="assets\images\people-avatar-3.jpg" />
@@ -448,6 +449,7 @@
     <Content Include="Scripts\jquery.signalR-2.2.0.min.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
     <Content Include="Scripts\tutorBoard.js" />
+    <Content Include="Views\Shared\ScheduledLesson.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
       <SubType>Designer</SubType>
